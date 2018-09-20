@@ -8,6 +8,7 @@ import Concourse.PipelineStatus
 import Concourse.Resource
 import Concourse.Team
 import Dashboard.Pipeline as Pipeline
+import DragDrop
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onMouseEnter)
@@ -25,9 +26,29 @@ import Time exposing (Time)
 
 
 type alias Group =
-    { pipelines : List Pipeline.PipelineWithJobs
+    { pipelines : GroupPipelines
     , teamName : String
     }
+
+
+pipelinesForGroup : Group -> List Pipeline.PipelineWithJobs
+pipelinesForGroup group =
+    case group.pipelines of
+        NoPipelines ->
+            []
+
+        Pipelines dragState ->
+            case dragState of
+                DragDrop.NotDragging pipelines ->
+                    pipelines
+
+                DragDrop.Dragging { initialState, before, dragging, after } ->
+                    before ++ [ dragging ] ++ after
+
+
+type GroupPipelines
+    = NoPipelines
+    | Pipelines (DragDrop.DragState Pipeline.PipelineWithJobs)
 
 
 type alias APIData =
@@ -144,8 +165,9 @@ setDropIndex dropIndex dropState =
 
 
 type Msg
-    = DragStart String Int
-    | DragOver String Int
+    = DragStart (DragDrop.ZipList Pipeline.PipelineWithJobs)
+    | DragOver Pipeline.PipelineWithJobs
+    | DragToEnd
     | DragEnd
     | PipelineMsg Pipeline.Msg
 
@@ -175,28 +197,25 @@ allPipelines data =
             )
 
 
-shiftPipelines : Int -> Int -> Group -> Group
-shiftPipelines dragIndex dropIndex group =
-    if dragIndex == dropIndex then
-        group
-    else
-        let
-            pipelines =
-                case
-                    List.head <|
-                        List.drop dragIndex <|
-                            group.pipelines
-                of
-                    Nothing ->
-                        group.pipelines
 
-                    Just pipeline ->
-                        shiftPipelineTo pipeline dropIndex group.pipelines
-        in
-            { group | pipelines = pipelines }
-
-
-
+-- shiftPipelines : Int -> Int -> Group -> Group
+-- shiftPipelines dragIndex dropIndex group =
+--     if dragIndex == dropIndex then
+--         group
+--     else
+--         let
+--             pipelines =
+--                 case
+--                     List.head <|
+--                         List.drop dragIndex <|
+--                             group.pipelines
+--                 of
+--                     Nothing ->
+--                         group.pipelines
+--                     Just pipeline ->
+--                         shiftPipelineTo pipeline dropIndex group.pipelines
+--         in
+--             { group | pipelines = pipelines }
 -- TODO this is pretty hard to reason about. really deeply nested and nasty. doesn't exactly relate
 -- to the hd refactor as hd doesn't have the drag-and-drop feature, but it's a big contributor
 -- to the 'length of this file' tire fire
@@ -261,7 +280,7 @@ apiData : List Group -> APIData
 apiData groups =
     let
         pipelines =
-            groups |> List.concatMap .pipelines
+            groups |> List.concatMap pipelinesForGroup
     in
         { teams = groups |> List.map (\g -> { id = 0, name = g.teamName })
         , pipelines = pipelines |> List.map .pipeline
@@ -286,42 +305,105 @@ ordering =
 view : List (Html Msg) -> DragState -> DropState -> Time -> Group -> Html Msg
 view header dragState dropState now group =
     let
-        pipelines =
-            if List.isEmpty group.pipelines then
-                [ Pipeline.pipelineNotSetView ]
-            else
-                List.append
-                    (List.indexedMap
-                        (\i pipeline ->
-                            Html.div [ class "pipeline-wrapper" ]
-                                [ pipelineDropAreaView dragState dropState group.teamName i
-                                , Html.div
-                                    [ classList
-                                        [ ( "dashboard-pipeline", True )
-                                        , ( "dashboard-paused", pipeline.pipeline.paused )
-                                        , ( "dashboard-running", not <| List.isEmpty <| List.filterMap .nextBuild pipeline.jobs )
-                                        , ( "dashboard-status-" ++ Concourse.PipelineStatus.show (Pipeline.pipelineStatusFromJobs pipeline.jobs False), not pipeline.pipeline.paused )
-                                        , ( "dragging", dragState == Dragging pipeline.pipeline.teamName i )
+        pipelinesView =
+            case group.pipelines of
+                NoPipelines ->
+                    [ Pipeline.pipelineNotSetView ]
+
+                Pipelines dragState ->
+                    case dragState of
+                        DragDrop.NotDragging pipelines ->
+                            pipelines
+                                |> DragDrop.zipLists
+                                |> List.map
+                                    (\({ before, pipeline, after } as zipList) ->
+                                        Html.div [ class "pipeline-wrapper" ]
+                                            [ Html.div
+                                                [ classList [ ( "drop-area", True ), ( "active", False ), ( "over", False ), ( "animation", False ) ]
+                                                ]
+                                                [ Html.text "" ]
+                                            , Html.div
+                                                [ classList
+                                                    [ ( "dashboard-pipeline", True )
+                                                    , ( "dashboard-paused", pipeline.pipeline.paused )
+                                                    , ( "dashboard-running", not <| List.isEmpty <| List.filterMap .nextBuild pipeline.jobs )
+                                                    , ( "dashboard-status-" ++ Concourse.PipelineStatus.show (Pipeline.pipelineStatusFromJobs pipeline.jobs False), not pipeline.pipeline.paused )
+                                                    , ( "dragging", False )
+                                                    ]
+                                                , attribute "data-pipeline-name" pipeline.pipeline.name
+                                                , attribute "ondragstart" "event.dataTransfer.setData('text/plain', '');"
+                                                , draggable "true"
+                                                , on "dragstart" (Json.Decode.succeed (DragStart zipList))
+                                                , on "dragend" (Json.Decode.succeed DragEnd)
+                                                ]
+                                                [ Html.div [ class "dashboard-pipeline-banner" ] []
+                                                , Html.map PipelineMsg <| Pipeline.pipelineView now pipeline
+                                                ]
+                                            ]
+                                    )
+
+                        DragDrop.Dragging { initialState, before, current, after } ->
+                            (before
+                                |> List.map
+                                    (\pipeline ->
+                                        Html.div [ class "pipeline-wrapper" ]
+                                            [ Html.div
+                                                [ classList [ ( "drop-area", True ), ( "active", False ), ( "over", False ), ( "animation", False ) ]
+                                                , on "dragenter" (Json.Decode.succeed (DragOver pipeline))
+                                                ]
+                                                [ Html.text "" ]
+                                            , Html.div
+                                                [ classList
+                                                    [ ( "dashboard-pipeline", True )
+                                                    , ( "dashboard-paused", pipeline.pipeline.paused )
+                                                    , ( "dashboard-running", not <| List.isEmpty <| List.filterMap .nextBuild pipeline.jobs )
+                                                    , ( "dashboard-status-" ++ Concourse.PipelineStatus.show (Pipeline.pipelineStatusFromJobs pipeline.jobs False), not pipeline.pipeline.paused )
+                                                    , ( "dragging", pipeline == current )
+                                                    ]
+                                                , attribute "data-pipeline-name" pipeline.pipeline.name
+                                                ]
+                                                [ Html.div [ class "dashboard-pipeline-banner" ] []
+                                                , Html.map PipelineMsg <| Pipeline.pipelineView now pipeline
+                                                ]
+                                            ]
+                                    )
+                            )
+                                ++ (after
+                                        |> List.map
+                                            (\pipeline ->
+                                                Html.div [ class "pipeline-wrapper" ]
+                                                    [ Html.div
+                                                        [ classList [ ( "drop-area", True ), ( "active", False ), ( "over", False ), ( "animation", False ) ]
+                                                        , on "dragenter" (Json.Decode.succeed (DragOver pipeline))
+                                                        ]
+                                                        [ Html.text "" ]
+                                                    , Html.div
+                                                        [ classList
+                                                            [ ( "dashboard-pipeline", True )
+                                                            , ( "dashboard-paused", pipeline.pipeline.paused )
+                                                            , ( "dashboard-running", not <| List.isEmpty <| List.filterMap .nextBuild pipeline.jobs )
+                                                            , ( "dashboard-status-" ++ Concourse.PipelineStatus.show (Pipeline.pipelineStatusFromJobs pipeline.jobs False), not pipeline.pipeline.paused )
+                                                            , ( "dragging", pipeline == current )
+                                                            ]
+                                                        , attribute "data-pipeline-name" pipeline.pipeline.name
+                                                        ]
+                                                        [ Html.div [ class "dashboard-pipeline-banner" ] []
+                                                        , Html.map PipelineMsg <| Pipeline.pipelineView now pipeline
+                                                        ]
+                                                    ]
+                                            )
+                                   )
+                                ++ [ Html.div
+                                        [ classList [ ( "drop-area", True ), ( "active", False ), ( "over", False ), ( "animation", False ) ]
+                                        , on "dragenter" (Json.Decode.succeed DragToEnd)
                                         ]
-                                    , attribute "data-pipeline-name" pipeline.pipeline.name
-                                    , attribute "ondragstart" "event.dataTransfer.setData('text/plain', '');"
-                                    , draggable "true"
-                                    , on "dragstart" (Json.Decode.succeed (DragStart pipeline.pipeline.teamName i))
-                                    , on "dragend" (Json.Decode.succeed DragEnd)
-                                    ]
-                                    [ Html.div [ class "dashboard-pipeline-banner" ] []
-                                    , Html.map PipelineMsg <| Pipeline.pipelineView now pipeline
-                                    ]
-                                ]
-                        )
-                        group.pipelines
-                    )
-                    [ pipelineDropAreaView dragState dropState group.teamName (List.length group.pipelines) ]
+                                        [ Html.text "" ]
+                                   ]
     in
         Html.div [ id group.teamName, class "dashboard-team-group", attribute "data-team-name" group.teamName ]
             [ Html.div [ class "pin-wrapper" ]
                 [ Html.div [ class "dashboard-team-header" ] header ]
-            , Html.div [ class "dashboard-team-pipelines" ] pipelines
+            , Html.div [ class "dashboard-team-pipelines" ] pipelinesView
             ]
 
 
