@@ -67,24 +67,30 @@ var _ = Describe("Teams API", func() {
 
 			fakeTeamOne.IDReturns(5)
 			fakeTeamOne.NameReturns(teamNames[0])
-			fakeTeamOne.AuthReturns(map[string][]string{
-				"groups": []string{}, "users": []string{"local:username"},
+			fakeTeamOne.AuthReturns(atc.TeamAuth{
+				"owner": atc.TeamRole{
+					"groups": []string{}, "users": []string{"local:username"},
+				},
 			})
 
 			fakeTeamTwo.IDReturns(9)
 			fakeTeamTwo.NameReturns(teamNames[1])
-			fakeTeamTwo.AuthReturns(map[string][]string{
-				"groups": []string{}, "users": []string{"local:username"},
+			fakeTeamTwo.AuthReturns(atc.TeamAuth{
+				"owner": atc.TeamRole{
+					"groups": []string{}, "users": []string{"local:username"},
+				},
 			})
 
 			fakeTeamThree.IDReturns(22)
 			fakeTeamThree.NameReturns(teamNames[2])
-			fakeTeamThree.AuthReturns(map[string][]string{
-				"users": []string{"local:username"}, "groups": []string{},
+			fakeTeamThree.AuthReturns(atc.TeamAuth{
+				"owner": atc.TeamRole{
+					"groups": []string{}, "users": []string{"local:username"},
+				},
 			})
 		})
 
-		Context("when the requester is an admin user", func() {
+		Context("when the requester is an admin", func() {
 			BeforeEach(func() {
 				fakeaccess.IsAdminReturns(true)
 
@@ -100,23 +106,23 @@ var _ = Describe("Teams API", func() {
  					{
  						"id": 5,
  						"name": "avengers",
-						"auth": {"users":["local:username"],"groups":[]}
+						"auth": { "owner":{"users":["local:username"],"groups":[]}}
  					},
  					{
  						"id": 9,
  						"name": "aliens",
-						"auth": {"groups":[],"users":["local:username"]}
- 					},
+						"auth": { "owner":{"users":["local:username"],"groups":[]}}
+					},
  					{
  						"id": 22,
  						"name": "predators",
-						"auth": {"users":["local:username"],"groups":[]}
- 					}
+						"auth": { "owner":{"users":["local:username"],"groups":[]}}
+					}
  				]`))
 			})
 		})
 
-		Context("when the requester is NOT an admin user", func() {
+		Context("when the requester is NOT an admin", func() {
 			BeforeEach(func() {
 				fakeaccess.IsAdminReturns(false)
 
@@ -135,12 +141,12 @@ var _ = Describe("Teams API", func() {
  					{
  						"id": 5,
  						"name": "avengers",
-						"auth": {"users":["local:username"],"groups":[]}
+						"auth": { "owner":{"users":["local:username"],"groups":[]}}
  					},
  					{
  						"id": 22,
  						"name": "predators",
-						"auth": {"users":["local:username"],"groups":[]}
+						"auth": { "owner":{"users":["local:username"],"groups":[]}}
  					}
  				]`))
 			})
@@ -188,8 +194,10 @@ var _ = Describe("Teams API", func() {
 			Context("when the team exists", func() {
 				BeforeEach(func() {
 					atcTeam = atc.Team{
-						Auth: map[string][]string{
-							"users": []string{"local:username"},
+						Auth: atc.TeamAuth{
+							"owner": atc.TeamRole{
+								"users": []string{"local:username"},
+							},
 						},
 					}
 					dbTeamFactory.FindTeamReturns(fakeTeam, true, nil)
