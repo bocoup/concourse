@@ -62,6 +62,7 @@ require (
 	github.com/go-test/deep v1.0.1 // indirect
 	github.com/gobuffalo/packr v1.13.5
 	github.com/gocql/gocql v0.0.0-20180827142746-f596bd36e19e // indirect
+	github.com/gogo/protobuf v1.1.1 // indirect
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
@@ -152,6 +153,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 	golang.org/x/sys v0.0.0-20180919162611-1561086e645b // indirect
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2 // indirect
+	google.golang.org/genproto v0.0.0-20180918203901-c3f76f3b92d1 // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.25
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce // indirect
 	gopkg.in/square/go-jose.v2 v2.1.8
