@@ -45,6 +45,7 @@ require (
 	github.com/cosiner/argv v0.0.0-20170225145430-13bacc38a0a5 // indirect
 	github.com/cppforlife/go-patch v0.0.0-20171006213518-250da0e0e68c // indirect
 	github.com/cppforlife/go-semi-semantic v0.0.0-20160921010311-576b6af77ae4
+	github.com/daviddengcn/go-colortext v0.0.0-20180409174941-186a3d44e920 // indirect
 	github.com/davidrjenni/reftools v0.0.0-20180914123528-654d0ba4f96d // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20180824013952-8fac8b954edb // indirect
 	github.com/derekparker/delve v1.1.0 // indirect
@@ -111,6 +112,7 @@ require (
 	github.com/mattes/migrate v3.0.1+incompatible // indirect
 	github.com/mattn/go-colorable v0.0.9
 	github.com/mattn/go-isatty v0.0.3
+	github.com/mattn/goreman v0.1.1 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 	github.com/miekg/dns v1.0.8
 	github.com/mitchellh/go-homedir v1.0.0 // indirect

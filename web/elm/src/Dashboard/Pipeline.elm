@@ -2,36 +2,20 @@ module Dashboard.Pipeline
     exposing
         ( Msg(..)
         , PipelineWithJobs
-        , SummaryPipeline
-        , PreviewPipeline
         , pipelineNotSetView
-        , pipelineView
-        , hdPipelineView
         , pipelineStatus
         , pipelineStatusFromJobs
+        , statusAgeText
         )
 
 import Concourse
-import Concourse.PipelineStatus
 import Duration
-import DashboardPreview
 import Date
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, onMouseEnter)
 import List.Extra
 import Maybe.Extra
-import Routes
-import StrictEvents exposing (onLeftClick)
 import Time exposing (Time)
-
-
-type SummaryPipeline
-    = SummaryPipeline PipelineWithJobs
-
-
-type PreviewPipeline
-    = PreviewPipeline PipelineWithJobs
 
 
 type alias PipelineWithJobs =
@@ -62,77 +46,6 @@ pipelineNotSetView =
         ]
 
 
-viewPreview : Time -> PreviewPipeline -> Html Msg
-viewPreview now (PreviewPipeline pwj) =
-    pipelineView now pwj
-
-
-viewSummary : SummaryPipeline -> Html Msg
-viewSummary (SummaryPipeline pwj) =
-    hdPipelineView pwj
-
-
-hdPipelineView : PipelineWithJobs -> Html Msg
-hdPipelineView { pipeline, jobs, resourceError } =
-    Html.div
-        [ classList
-            [ ( "dashboard-pipeline", True )
-            , ( "dashboard-paused", pipeline.paused )
-            , ( "dashboard-running", List.any (\job -> job.nextBuild /= Nothing) jobs )
-            , ( "dashboard-status-" ++ Concourse.PipelineStatus.show (pipelineStatusFromJobs jobs False), not pipeline.paused )
-            ]
-        , attribute "data-pipeline-name" pipeline.name
-        , attribute "data-team-name" pipeline.teamName
-        ]
-        [ Html.div [ class "dashboard-pipeline-banner" ] []
-        , Html.div
-            [ class "dashboard-pipeline-content"
-            , onMouseEnter <| TooltipHd pipeline.name pipeline.teamName
-            ]
-            [ Html.a [ href <| Routes.pipelineRoute pipeline ]
-                [ Html.div
-                    [ class "dashboardhd-pipeline-name"
-                    , attribute "data-team-name" pipeline.teamName
-                    ]
-                    [ Html.text pipeline.name ]
-                ]
-            ]
-        , Html.div [ classList [ ( "dashboard-resource-error", resourceError ) ] ] []
-        ]
-
-
-pipelineView : Time -> PipelineWithJobs -> Html Msg
-pipelineView now ({ pipeline, jobs, resourceError } as pipelineWithJobs) =
-    Html.div [ class "dashboard-pipeline-content" ]
-        [ headerView pipelineWithJobs
-        , DashboardPreview.view jobs
-        , footerView pipelineWithJobs now
-        ]
-
-
-headerView : PipelineWithJobs -> Html Msg
-headerView ({ pipeline, resourceError } as pipelineWithJobs) =
-    Html.a [ href <| Routes.pipelineRoute pipeline, draggable "false" ]
-        [ Html.div
-            [ class "dashboard-pipeline-header"
-            , onMouseEnter <| Tooltip pipeline.name pipeline.teamName
-            ]
-            [ Html.div [ class "dashboard-pipeline-name" ]
-                [ Html.text pipeline.name ]
-            , Html.div [ classList [ ( "dashboard-resource-error", resourceError ) ] ] []
-            ]
-        ]
-
-
-footerView : PipelineWithJobs -> Time -> Html Msg
-footerView pipelineWithJobs now =
-    Html.div [ class "dashboard-pipeline-footer" ]
-        [ Html.div [ class "dashboard-pipeline-icon" ] []
-        , transitionView now pipelineWithJobs
-        , pauseToggleView pipelineWithJobs.pipeline
-        ]
-
-
 type alias Event =
     { succeeded : Bool
     , time : Time
@@ -158,11 +71,6 @@ jobEvent job =
     Maybe.map
         (Event <| jobSucceeded job)
         (transitionStart job)
-
-
-equalBy : (a -> b) -> a -> a -> Bool
-equalBy f x y =
-    f x == f y
 
 
 jobSucceeded : Concourse.Job -> Bool
@@ -201,12 +109,6 @@ statusAgeText pipeline =
 
         _ ->
             sinceTransitionText pipeline
-
-
-transitionView : Time -> PipelineWithJobs -> Html a
-transitionView time pipeline =
-    Html.div [ class "build-duration" ]
-        [ Html.text <| statusAgeText pipeline time ]
 
 
 pipelineStatus : PipelineWithJobs -> Concourse.PipelineStatus
@@ -253,16 +155,3 @@ jobStatuses jobs =
 containsStatus : Concourse.BuildStatus -> List (Maybe Concourse.BuildStatus) -> Bool
 containsStatus =
     List.member << Just
-
-
-pauseToggleView : Concourse.Pipeline -> Html Msg
-pauseToggleView pipeline =
-    Html.a
-        [ classList
-            [ ( "pause-toggle", True )
-            , ( "icon-play", pipeline.paused )
-            , ( "icon-pause", not pipeline.paused )
-            ]
-        , onLeftClick <| TogglePipelinePaused pipeline
-        ]
-        []

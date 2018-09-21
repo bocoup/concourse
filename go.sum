@@ -151,6 +151,8 @@ github.com/cppforlife/go-semi-semantic v0.0.0-20160921010311-576b6af77ae4/go.mod
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/daviddengcn/go-colortext v0.0.0-20180409174941-186a3d44e920 h1:d/cVoZOrJPJHKH1NdeUjyVAWKp4OpOT+Q+6T1sH7jeU=
+github.com/daviddengcn/go-colortext v0.0.0-20180409174941-186a3d44e920/go.mod h1:dv4zxwHi5C/8AeI+4gX4dCWOIvNi7I6JCSX0HvlKPgE=
 github.com/davidrjenni/reftools v0.0.0-20180914123528-654d0ba4f96d h1:aRvyac5PN1NEfcANJ1tfs8GMs5I9OXsVeg0FJkpXOys=
 github.com/davidrjenni/reftools v0.0.0-20180914123528-654d0ba4f96d/go.mod h1:8o/GRMvsb9VyFbSEZGXfa0dkSXml4G23W0D/h9FksWM=
 github.com/denisenkom/go-mssqldb v0.0.0-20180824013952-8fac8b954edb h1:VHrAAPJHYRUA1DtueJ2IuAcAIYLXYU009juj0c7938g=
@@ -332,6 +334,7 @@ github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGAR
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8 h1:12VvqtR6Aowv3l/EQUlocDHW2Cp4G9WJVH7uyH8QFJE=
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
+github.com/joho/godotenv v1.2.0 h1:vGTvz69FzUFp+X4/bAkb0j5BoLC+9bpqTWY8mjhA9pc=
 github.com/joho/godotenv v1.2.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/jonboulle/clockwork v0.0.0-20160907122059-bcac9884e750 h1:ysDggIU+1XiT58oKSl5C9d+hxeOW7kqeI2n6eZymuMs=
 github.com/jonboulle/clockwork v0.0.0-20160907122059-bcac9884e750/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
@@ -379,6 +382,8 @@ github.com/mattn/go-runewidth v0.0.3 h1:a+kO+98RDGEfo6asOGMmpodZq4FNtnGP54yps8Bz
 github.com/mattn/go-runewidth v0.0.3/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
 github.com/mattn/go-sqlite3 v0.0.0-20160907162043-3fb7a0e792ed h1:hhFE3aQaQI9KqFBAfuuRvfNIeqG+ExqgaHwec3Lve6s=
 github.com/mattn/go-sqlite3 v0.0.0-20160907162043-3fb7a0e792ed/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
+github.com/mattn/goreman v0.1.1 h1:dOmspIDnL9PEJBKeamPelYLUSmydugOW4c/tdnQMPv0=
+github.com/mattn/goreman v0.1.1/go.mod h1:pMVM+Koudpt5fYZEz2bzvx0Spdm4izKf1fzrtl+groA=
 github.com/matttproud/golang_protobuf_extensions v0.0.0-20150406173934-fc2b8d3a73c4/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0jegS5sx/RkqARlsWZ6pIwiU=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
